@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 st.title("Shapley Values")
 
 # 1. User Input
-st.write("Understanding Shapley Values can be difficult - so here's a presentation. Shapley values are meant to measure how much of an impact individual variable or a group of variables has on a function (or any other model that takes several inputs and has a return value. We'll demonstrate this on a logical equation - please input one, and you'll see each variables impact.)")
+st.write("Understanding Shapley Values can be difficult - so here's a presentation. Shapley values are meant to measure how much of an impact individual variable or a group (coalition) of variables has on a function output (this also works with for example neural networks, as they can take several inputs and output a signle value, just like a function). We'll demonstrate this on a logical equation - please input one, and you'll see each variables impact.")
 equation_input = st.text_input(
     "Enter a logical equation:",
     value="(f[1] and f[2]) or not f[3]",
@@ -60,58 +60,57 @@ def evaluate_expression(var_values: np.ndarray) -> bool:
         outputs[i] = bool(eval(expr, allowed_globals, create_var_dict(row)))
     return outputs
 
-# Mode Selection
-mode = st.radio("Choose evaluation mode:", ["Interactive Inputs", "Generate Truth Table"])
+st.subheader("Variable Values")
+cols = st.columns(len(variables))
+var_states = {}
 
-if mode == "Interactive Inputs":
-    
-    st.subheader("Variable Values")
-    cols = st.columns(len(variables))
-    var_states = {}
 
-    
-    for i, var in enumerate(variables):
-        with cols[i]:
-            var_states[var] = st.checkbox(f"{var}", value=True)
-    vars = np.asarray(list([bool(var_states[key]) for key in var_states.keys()]))
-            
-    try:
-        data=all_permutations(len(vars))
-        explainer = shapiq.TabularExplainer(
-            model=evaluate_expression,
-            data=data,
-            index="k-SII",
-            max_order=2,
-            normalize=False,
-            sample_size=len(data),
-        )
-
-        interaction_values = explainer.explain(vars, budget=256)
-        interaction_values.plot_waterfall(show=False)
-
-        fig = plt.gcf()
-        st.pyplot(fig)
-        plt.close(fig)
-    except Exception as e:
-        st.error(f"Invalid equation format. Error: {e}")
-
-else:  # Truth Table Mode
-    st.subheader("Truth Table")
-    
-    # Generate all combinations of True/False
-    combinations = list(itertools.product([True, False], repeat=len(variables)))
-    
-    rows = []
-    try:
-        for combo in combinations:
-            var_dict = dict(zip(variables, combo))
-            res = evaluate_expression(normalized_eq, var_dict)
-            
-            row = {**var_dict, "Result": res}
-            rows.append(row)
-            
-        df = pd.DataFrame(rows)
-        st.dataframe(df, use_container_width=True)
+for i, var in enumerate(variables):
+    with cols[i]:
+        var_states[var] = st.checkbox(f"{var}", value=True)
+vars = np.asarray(list([bool(var_states[key]) for key in var_states.keys()]))
         
-    except Exception as e:
-        st.error(f"Could not compute truth table. Error: {e}")
+try:
+    data=all_permutations(len(vars))
+    explainer = shapiq.TabularExplainer(
+        model=evaluate_expression,
+        data=data,
+        index="k-SII",
+        max_order=2,
+        normalize=False,
+        sample_size=len(data),
+    )
+
+    interaction_values = explainer.explain(vars, budget=256)
+    interaction_values.plot_waterfall(show=False)
+
+    fig = plt.gcf()
+    st.pyplot(fig)
+    plt.close(fig)
+except Exception as e:
+    st.error(f"Invalid equation format. Error: {e}")
+st.subheader("How to read a waterfall chart")
+st.write("Begin at the bottom of the chart. You will see arrows pointing either left or right, with negative or positive values. On the x-axis you start in the point of and Expected Value - if you were to average out all possible outputs a function can have (based on all possible inputs) that's the value you would get. Starting from that point, any variable, or coalition of those, can either increase, or decrease expected score. If you follow all the arrows, from bottom to the top, you will end up either in 0 or in 1 (in case of a logicall function) - that depends whether the equation you inputed, and variable's values produce a positive or a negative result.")
+st.subheader("How to interpret those values")
+st.write("Chances are, if you inputed an equation that go something like this:   \nf1 or (f2 and f3 and ...)   \nf1 value will have the biggest value, whether negative or positive. We can easily infer from that that it likely will be a deciding factor in the outcome of this equation, but that may manifest in diffrent ways.")
+
+
+try:
+    data=all_permutations(len(vars))
+    explainer = shapiq.TabularExplainer(
+        model=evaluate_expression,
+        data=data,
+        index="Rred",
+        max_order=2,
+        normalize=False,
+        sample_size=len(data),
+    )
+    interaction_values = explainer.explain(vars, budget=256)
+    st.write(interaction_values)
+    interaction_values.plot_upset(show=False)
+    
+    fig = plt.gcf()
+    st.pyplot(fig)
+    plt.close(fig)
+except Exception as e:
+    st.error(f"Invalid equation format. Error: {e}")

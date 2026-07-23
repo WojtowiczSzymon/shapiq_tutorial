@@ -1,0 +1,14 @@
+[project]
+name = "binary-shapiq"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pylint>=4.0.6",
+    "pytest>=9.1.1",
+    "setuptools>=83.0.0",
+    "shapiq>=1.6.0",
+    "streamlit>=1.60.0",
+]
+
+[tool.uv.sources]
+shapiq = { path = "../Documents/praktyki-projekt-shapley/shapiq_red", editable = true }
