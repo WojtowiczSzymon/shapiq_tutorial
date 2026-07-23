@@ -5,6 +5,7 @@ import itertools
 import shapiq
 import numpy as np
 import matplotlib.pyplot as plt
+from interaction_type_explainer import TypeExplainer
 
 
 st.title("Shapley Values")
@@ -112,7 +113,8 @@ st.write("In order to determine the interaction type we can use redundancy index
 equation_input = st.text_input(
     "Enter another equation, and it will return redundancy in each pair of inputs:",
     value="f1 and f2",
-    help="Use variables like f[1], f1, brackets (), and operators: and, or, not"
+    help="Use variables like f[1], f1, brackets (), and operators: and, or, not",
+    key="input2"
 )
 
 normalized_eq = normalize_equation(equation_input)
@@ -164,3 +166,40 @@ with st.container(border=True):
     * **Antagonism:** In remaining cases it's antagonism
     """
     )
+    st.write("try it yourself!")
+    equation_input = st.text_input(
+    "Enter equation and you will see type of interaction between pairs. Remember - this will heavily depend on variable value",
+    value="(f1 and f2) or (f3 and f4)",
+    help="Use variables like f[1], f1, brackets (), and operators: and, or, not",
+    key="input3"
+    )
+
+    normalized_eq = normalize_equation(equation_input)
+
+    variables = sorted(list(set(re.findall(r'\bf\d+\b', normalized_eq))))
+
+    if not variables:
+        st.info("Please enter an equation containing variables like f[1] or f1.")
+        st.stop()
+
+    st.write(f"**Detected Variables:** {', '.join(variables)}")
+
+    st.subheader("Variable Values")
+    cols = st.columns(len(variables))
+    var_states3= {}
+
+
+    for i, var in enumerate(variables):
+        with cols[i]:
+            var_states3[var] = st.checkbox(f"{var}", value=True, key="equation3"+str(i))
+    vars = np.asarray(list([bool(var_states3[key]) for key in var_states3.keys()]))
+    try:
+        data=all_permutations(len(vars))
+        types=TypeExplainer(vars, evaluate_expression, data).explain()
+        ind=0
+        for i in range(len(vars)-1):
+            for j in range(i+1,len(vars)):
+                st.success(f"(f{i+1},f{j+1}) {types[ind]}")
+                ind+=1
+    except:
+        st.error("TypeExplainer error")
