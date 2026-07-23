@@ -11,7 +11,7 @@ from interaction_type_explainer import TypeExplainer
 st.title("Shapley Values")
 
 # 1. User Input
-st.write("Understanding Shapley Values can be difficult - so here's a presentation. Shapley values are meant to measure how much of an impact individual variable or a group (coalition) of variables has on a function output (this also works with for example neural networks, as they can take several inputs and output a signle value, just like a function). We'll demonstrate this on a logical equation - please input one, and you'll see each variables impact.")
+st.write("Understanding Shapley Values can be difficult - so here is a presentation. Shapley values are meant to measure how much of an impact individual variable or a group (coalition) of variables has on a function output (this also can be applied to neural networks, as they can take several inputs and output a single value, just like a function). We'll demonstrate this on a logical equation - please input one, and you'll see each variable's impact.")
 equation_input = st.text_input(
     "Enter a logical equation:",
     value="(f1 and f2) or not f3",
@@ -62,13 +62,18 @@ def evaluate_expression(var_values: np.ndarray) -> bool:
     return outputs
 
 st.subheader("Variable Values")
+st.write("check the box next to a variable in order to set it to TRUE, leave if unchecked to set it to FALSE")
 cols = st.columns(len(variables))
+
+
 var_states = {}
-
-
 for i, var in enumerate(variables):
     with cols[i]:
-        var_states[var] = st.checkbox(f"{var}", value=True, key="equation1"+str(i))
+        key="equation1"+str(i)      
+        if key not in st.session_state:
+            st.session_state[key] = False
+        current_val = st.session_state[key]
+        var_states[var] = st.checkbox(f"{var}={current_val}", key=key)
 vars = np.asarray(list([bool(var_states[key]) for key in var_states.keys()]))
         
 try:
@@ -83,7 +88,7 @@ try:
     )
 
     interaction_values = explainer.explain(vars, budget=256)
-    interaction_values.plot_waterfall(show=False)
+    interaction_values.plot_waterfall(show=False, feature_names=variables)
 
     fig = plt.gcf()
     st.pyplot(fig)
@@ -91,9 +96,9 @@ try:
 except Exception as e:
     st.error(f"Invalid equation format. Error: {e}")
 st.subheader("How to read a waterfall chart")
-st.write("Begin at the bottom of the chart. You will see arrows pointing either left or right, with negative or positive values. On the x-axis you start in the point of and Expected Value - if you were to average out all possible outputs a function can have (based on all possible inputs) that's the value you would get. Starting from that point, any variable, or coalition of those, can either increase, or decrease expected score. If you follow all the arrows, from bottom to the top, you will end up either in 0 or in 1 (in case of a logicall function) - that depends whether the equation you inputed, and variable's values produce a positive or a negative result.")
+st.markdown("Begin at the bottom of the chart. You will see arrows pointing either left or right, with negative or positive values. On the x-axis you start in the point of an **expected value** - if you were to average out all possible outputs a function can have (based on all possible inputs) that's the value you would get. Starting from that point, any variable, or coalition of those, can either increase, or decrease the expected score. If you follow all the arrows, from bottom to top, you will end up either in 0 or in 1 (in case of a logical function) - that depends on whether the equation you inputed, and variable's values either produce 1 or 0 as result.")
 st.subheader("How to interpret those values")
-st.write("Chances are, if you inputed an equation that go something like this:   \nf1 or (f2 and f3 and ...)   \nf1 value will have the biggest value, whether negative or positive. We can easily infer from that that it likely will be a deciding factor in the outcome of this equation, but that may manifest in diffrent ways.")
+st.write("Chances are, if you inputed an equation that goes like this:   \nf1 or (f2 and f3 and ...)   \nf1 shapley value will be the biggest, whether negative or positive. We can easily infer from that that it likely will be a deciding factor in the outcome of this equation, but that may manifest in diffrent ways.")
 
 
 with st.container(border=True):
@@ -101,9 +106,9 @@ with st.container(border=True):
     st.write("Let's focus on interactions of 2 variables for now. They can be of 3 types:")
     st.markdown(
         """
-    * **Redundancy:** One of the inputs is useless to the result. Think if a situation when we have AND gate, and one of the inputs is 0 - even if the other one is 1, it's redundant, because the result is 0 anyway
+    * **Redundancy:** One of the inputs is inconsequential to the result. Think of a situation when we have AND gate, and one of the inputs is 0 - even if the other one is 1, it's redundant, because the result is 0 anyway
     * **Synergy:** Two inputs work together to increase the score even more than they would individualy.
-    * **Antagonism:** Even if two inputs would increase the score by themselves, they bring it down when together. The example would be XOR gate (it needs an odd number of ones to return 1) - one 1 increases the score, but [1,1] decrease it by a lot
+    * **Antagonism:** Even if two inputs would increase the score by themselves, they bring it down when together. The example would be XOR gate (it needs an odd number of ones to return 1) - one 1 increases the score, but [1,1] decrease it significantly
     """
     )
 
@@ -134,7 +139,11 @@ var_states2= {}
 
 for i, var in enumerate(variables):
     with cols[i]:
-        var_states2[var] = st.checkbox(f"{var}", value=True, key="equation2"+str(i))
+        key="equation2"+str(i)      
+        if key not in st.session_state:
+            st.session_state[key] = False
+        current_val = st.session_state[key]
+        var_states2[var] = st.checkbox(f"{var}={current_val}", key=key)
 vars = np.asarray(list([bool(var_states2[key]) for key in var_states2.keys()]))
 
 try:
@@ -161,14 +170,14 @@ with st.container(border=True):
     st.write("We shall use previously established values to calculate the type of the interaction between 2 inputs")
     st.markdown(
         """
-    * **Synergy:** We determine the interaction type is synergy if main effects (single variable interaction value) of 2 variables and value of their interaction all have the same sign - In that case, they are all "pushing" the score in the same direction, so we conclude they must have a synergy
-    * **Redundancy:** If the effect is concluded not to be syngery, AND redundancy index value is greater than 0, it's redundancy
+    * **Synergy:** We determine the interaction type is synergy if main effects (single variable interaction value) of 2 variables and value of their interaction all have the same sign. In that case, they are all "pushing" the score in the same direction, so we conclude they must have a synergy
+    * **Redundancy:** If the effect is concluded not to be synergy, AND redundancy index value is greater than 0, it's redundancy
     * **Antagonism:** In remaining cases it's antagonism
     """
     )
     st.write("try it yourself!")
     equation_input = st.text_input(
-    "Enter equation and you will see type of interaction between pairs. Remember - this will heavily depend on variable value",
+    "Enter equation and you will see type of interaction within each pair. Remember - this will heavily depend on variable value",
     value="(f1 and f2) or (f3 and f4)",
     help="Use variables like f[1], f1, brackets (), and operators: and, or, not",
     key="input3"
@@ -191,7 +200,11 @@ with st.container(border=True):
 
     for i, var in enumerate(variables):
         with cols[i]:
-            var_states3[var] = st.checkbox(f"{var}", value=True, key="equation3"+str(i))
+            key="equation3"+str(i)      
+            if key not in st.session_state:
+                st.session_state[key] = False
+            current_val = st.session_state[key]
+            var_states3[var] = st.checkbox(f"{var}={current_val}", key=key)
     vars = np.asarray(list([bool(var_states3[key]) for key in var_states3.keys()]))
     try:
         data=all_permutations(len(vars))
