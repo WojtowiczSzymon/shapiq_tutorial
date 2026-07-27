@@ -36,6 +36,21 @@ div[class*="try-it-border"] {
 </style>
 """)
 
+st.html("""
+<style>
+    /* Styling when 'f1=True' is selected (Green) */
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"]:has(span:contains("f1=True")) {
+        background-color: #2e7d32 !important;
+        color: white !important;
+    }
+    
+    /* Styling when 'f1=False' is selected (Red) */
+    div[data-testid="stSegmentedControl"] button[aria-selected="true"]:has(span:contains("f1=False")) {
+        background-color: #c62828 !important;
+        color: white !important;
+    }
+</style>
+""")
 st.title("Shapley Values")
 
 # 1. User Input
@@ -49,7 +64,7 @@ with st.container(key="try-it-border_1"):
     with col_left:
         with st.container(border=False):
             
-            with st.form(key="form"):
+            with st.form(key="form1"):
                 equation_input = st.text_input(
                     "Enter a logical expression:",
                     value="f1 and f2",
@@ -70,21 +85,27 @@ with st.container(key="try-it-border_1"):
 
             st.write(f"**Detected Variables:** {', '.join(variables)}")
 
-
-
-            st.subheader("Variable Values")
-            st.write("check the box next to a variable in order to set it to TRUE, leave if unchecked to set it to FALSE")
+            st.write("Toggle whether you want to set each variable to True or False.")
             cols = st.columns(len(variables))
 
 
             var_states = {}
+            choice = {}
             for i, var in enumerate(variables):
                 with cols[i]:
-                    key="equation1"+str(i)      
+                    key="switch1"+str(i)      
                     if key not in st.session_state:
                         st.session_state[key] = False
                     current_val = st.session_state[key]
-                    var_states[var] = st.checkbox(f"{var}={current_val}", key=key)
+                    choice[var] =  st.segmented_control(
+                        label=f"{var}",
+                        options=[f"{var}=False", f"{var}=True"],
+                        default=f"{var}=False",
+                        key=key,
+                        required=True
+                    )
+                    var_states[var] = (choice[var] == f"{var}=True")
+                    
             vars = np.asarray(list([bool(var_states[key]) for key in var_states.keys()]))
                     
             

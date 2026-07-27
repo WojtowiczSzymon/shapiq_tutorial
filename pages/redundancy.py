@@ -42,12 +42,17 @@ st.write("In order to determine the interaction type we can use redundancy index
 
 with st.container(key="try-it-border_2"):
     st.header("Try it yourself!")
-    equation_input = st.text_input(
-        "Enter another equation, and it will return redundancy in each pair of inputs:",
-        value="f1 and f2",
-        help="Use variables like f[1], f1, brackets (), and operators: and, or, not",
-        key="input2"
-    )
+    with st.form(key="form1"):
+        equation_input = st.text_input(
+                "Enter another equation, and it will return redundancy in each pair of inputs:",
+                value="f1 and f2",
+                help="Use variables like f[1], f1; brackets (); operators: and, or, not, ^ (xor)",
+                key="input2"
+            )
+        submitted = st.form_submit_button("Confirm")
+    
+                
+    st.markdown('</div>', unsafe_allow_html=True)
 
     normalized_eq = normalize_equation(equation_input)
 
@@ -59,19 +64,28 @@ with st.container(key="try-it-border_2"):
 
     st.write(f"**Detected Variables:** {', '.join(variables)}")
 
-    st.subheader("Variable Values")
+    st.write("Toggle whether you want to set each variable to True or False.")
     cols = st.columns(len(variables))
-    var_states2= {}
 
 
+    var_states = {}
+    choice = {}
     for i, var in enumerate(variables):
         with cols[i]:
-            key="equation2"+str(i)      
+            key="switch1"+str(i)      
             if key not in st.session_state:
                 st.session_state[key] = False
             current_val = st.session_state[key]
-            var_states2[var] = st.checkbox(f"{var}={current_val}", key=key)
-    vars = np.asarray(list([bool(var_states2[key]) for key in var_states2.keys()]))
+            choice[var] =  st.segmented_control(
+                label=f"{var}",
+                options=[f"{var}=False", f"{var}=True"],
+                default=f"{var}=False",
+                key=key,
+                required=True
+            )
+            var_states[var] = (choice[var] == f"{var}=True")
+            
+    vars = np.asarray(list([bool(var_states[key]) for key in var_states.keys()]))
 
     try:
         data=all_permutations(len(vars))
