@@ -38,8 +38,32 @@ div[class*="try-it-border"] {
 
 
 st.title("Redundancy Index")
-st.write("In order to determine the interaction type we can use redundancy index, which gives positive values for redundancy feature pairs")
+st.write("In order to determine the interaction type we can use redundancy index, which gives positive values for redundancy feature pairs. There are multiple ways to calculate redundancy index, we can calculate them from the following equations:")
 
+
+st.latex(r"""
+\begin{aligned}
+g_u(S) &= f_i(S \cup \{u\}) - f_i(S)   &  g_v(S) = f_i(S \cup \{v\}) - f_i(S) \\[8pt]
+g_{uv}(S) &= f_i(S \cup \{u, v\}) - f_i(S)   &   g_{\max}(S) = \max\{g_u(S), g_v(S)\} \\[8pt]
+\text{base}(S) &= \max(0, \min(g_{uv}(S), g_{\max}(S)))   &   \text{span}(S) = g_{uv}(S) - g_{\max}(S)
+\end{aligned}
+""")
+
+st.latex(
+    r"R_{\text{red}, i}(u, v) = \frac{\text{base\_mean}(u, v)}{1 +"
+    r" \text{span\_mean}(u, v)}"
+)
+
+
+st.write("The alternative is to use index like this:")
+
+st.latex(
+    
+    r"Idx(u, v) = \frac{\text{I}(u, v)}{\text{I}(u) +"
+    r" \text{I}(v) + {I}(u, v)}"
+)
+
+st.write("Where they differ is in the way they distinguish between redundancy and antagonism. The first index prefers redundancy, while the second index prefers antagonism. For example, if we have an AND gate with inputs 1 and 0, if we look at 0 first then 1 seems redundant, since the output will be 0 either way, but if we look at 1 first then 0 seems antagonistic, because it negates the positive input 1 has. For our purposes we'll use the first index.")
 with st.container(key="try-it-border_2"):
     st.header("Try it yourself!")
     with st.form(key="form1"):
