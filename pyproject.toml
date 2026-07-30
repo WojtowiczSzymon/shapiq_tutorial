@@ -1,12 +1,11 @@
 [project]
-name = "app"
+name = "shapiq-tutorial"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "pylint>=4.0.6",
-    "pytest>=9.1.1",
-    "setuptools>=83.0.0",
-    "shapiq>=1.6.0",
+    "numpy>=2.5.1",
+    "pandas>=3.0.5",
+    "shapiq",
     "streamlit>=1.60.0",
 ]
 
