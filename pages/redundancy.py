@@ -6,7 +6,6 @@ import itertools
 import shapiq
 import numpy as np
 import matplotlib.pyplot as plt
-from shapiq.interaction_type_explainer import TypeExplainer
 
 from define import all_permutations, normalize_equation, create_var_dict, evaluate_expression, normalized_eq
 
