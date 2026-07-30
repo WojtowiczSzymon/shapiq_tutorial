@@ -67,7 +67,9 @@ def explain(vars, evaluate_expression, data):
             values_combined = values_sii[ind]
             index = values_combined / (value1 + value2 + values_combined)
             ind+=1
-            if (value1 > -0.00001 and value2 > -0.00001 and values_combined > -0.00001) or (value1 < 0.0001 and value2 < 0.0001 and values_combined < 0.0001):
+            if values_combined > -0.00001 and values_combined < 0.00001:
+                result.append("independence")
+            elif (value1 > -0.00001 and value2 > -0.00001 and values_combined > -0.00001) or (value1 < 0.0001 and value2 < 0.0001 and values_combined < 0.0001):
                 result.append("synergy")
             elif index < 0:
                 result.append("redundancy")
