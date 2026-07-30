@@ -6,7 +6,6 @@ import itertools
 import shapiq
 import numpy as np
 import matplotlib.pyplot as plt
-from interaction_type_explainer import TypeExplainer
 
 from define import all_permutations, normalize_equation, create_var_dict, evaluate_expression, normalized_eq
 
@@ -45,13 +44,45 @@ st.markdown(
 * **Antagonism:** In remaining cases it's antagonism
 """
 )
+def explain(vars, evaluate_expression, data):
+    """
+    Explain interaction type by returning an array of their names
+    """
+    n = len(vars)
+    print(vars)
+    explainer = shapiq.TabularExplainer(
+        model=evaluate_expression,
+        data=data,
+        index="k-SII",
+        max_order=2,
+        normalize=False,
+        sample_size=len(data),
+    )
+    print("explainer:", explainer)
+    ind=n+1
+    result=[]
+    values_sii = np.asarray(explainer.explain(vars, budget=256))
+    print("values_sii:", values_sii)
+    for i in range(1, n + 1):
+        for j in range(i + 1, n + 1):
+            value1 = values_sii[i]
+            value2 = values_sii[j]
+            values_combined = values_sii[ind]
+            ind+=1
+            if (value1 > -0.00001 and value2 > -0.00001 and values_combined > -0.00001) or (value1 < 0.0001 and value2 < 0.0001 and values_combined < 0.0001):
+                result.append("synergy")
+            elif values_combined > 0:
+                result.append("redundancy")
+            else:
+                result.append("antagonism")
+    return result
 with st.container(key="try-it-border_3"):
     st.header("Try it yourself!")
    
     with st.form(key="form1"):
         equation_input = st.text_input(
                 "Enter equation and you will see type of interaction within each pair. Remember - this will heavily depend on variable value",
-                value="f1 ^ f2 or (not f3 and f4)",
+                value="f1 and f2 or f3",
                 help="Use variables like f[1], f1; brackets (); operators: and, or, not, ^ (xor)",
                 key="input3"
         )
@@ -92,8 +123,10 @@ with st.container(key="try-it-border_3"):
             
     vars = np.asarray(list([bool(var_states3[key]) for key in var_states3.keys()]))
     try:
+        print("trying")
         data=all_permutations(len(vars))
-        types=TypeExplainer(vars, evaluate_expression, data).explain()
+        types=explain(vars, evaluate_expression, data)
+        print("types:", types)
         ind=0
         for i in range(len(vars)-1):
             for j in range(i+1,len(vars)):
