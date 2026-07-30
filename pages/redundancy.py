@@ -62,7 +62,7 @@ st.latex(
     r" \text{I}(v) + {I}(u, v)}"
 )
 
-st.write("Where they differ is in the way they distinguish between redundancy and antagonism. The first index prefers redundancy, while the second index prefers antagonism. For example, if we have an AND gate with inputs 1 and 0, if we look at 0 first then 1 seems redundant, since the output will be 0 either way, but if we look at 1 first then 0 seems antagonistic, because it negates the positive input 1 has. For our purposes we'll use the first index.")
+st.write("Where they differ is in the way they distinguish between redundancy and antagonism. The first index prefers redundancy, while the second index prefers antagonism. For example, if we have an AND gate with inputs 1 and 0, if we look at 0 first then 1 seems redundant, since the output will be 0 either way, but if we look at 1 first then 0 seems antagonistic, because it negates the positive input 1 has. For our purposes we'll use the second index.")
 with st.container(key="try-it-border_2"):
     st.header("Try it yourself!")
     with st.form(key="form1"):
