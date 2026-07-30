@@ -115,13 +115,23 @@ with st.container(key="try-it-border_2"):
         explainer = shapiq.TabularExplainer(
             model=evaluate_expression,
             data=data,
-            index="Rred",
+            index="k-SII",
             max_order=2,
             normalize=False,
             sample_size=len(data),
         )
-        interaction_values = explainer.explain(vars, budget=256)
-        interaction_values.get_n_order(2).plot_upset(show=False)
+        n=len(vars)
+        ind=n+1
+        values_sii = explainer.explain(vars, budget=256)
+        for i in range(1, n + 1):
+                for j in range(i + 1, n + 1):
+                    value1 = values_sii[i]
+                    value2 = values_sii[j]
+                    values_combined = values_sii[ind]
+                    index = values_combined / (value1 + value2 + values_combined)
+                    values_sii[ind]=index
+                    ind+=1
+        values_sii.get_n_order(2).plot_upset(show=False)
         
         fig = plt.gcf()
         st.pyplot(fig)

@@ -49,7 +49,6 @@ def explain(vars, evaluate_expression, data):
     Explain interaction type by returning an array of their names
     """
     n = len(vars)
-    print(vars)
     explainer = shapiq.TabularExplainer(
         model=evaluate_expression,
         data=data,
@@ -58,20 +57,19 @@ def explain(vars, evaluate_expression, data):
         normalize=False,
         sample_size=len(data),
     )
-    print("explainer:", explainer)
     ind=n+1
     result=[]
     values_sii = np.asarray(explainer.explain(vars, budget=256))
-    print("values_sii:", values_sii)
     for i in range(1, n + 1):
         for j in range(i + 1, n + 1):
             value1 = values_sii[i]
             value2 = values_sii[j]
             values_combined = values_sii[ind]
+            index = values_combined / (value1 + value2 + values_combined)
             ind+=1
             if (value1 > -0.00001 and value2 > -0.00001 and values_combined > -0.00001) or (value1 < 0.0001 and value2 < 0.0001 and values_combined < 0.0001):
                 result.append("synergy")
-            elif values_combined > 0:
+            elif index < 0:
                 result.append("redundancy")
             else:
                 result.append("antagonism")
