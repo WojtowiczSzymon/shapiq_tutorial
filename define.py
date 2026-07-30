@@ -5,7 +5,6 @@ import itertools
 import shapiq
 import numpy as np
 import matplotlib.pyplot as plt
-from shapiq.interaction_type_explainer import TypeExplainer
 
 def all_permutations(stop) -> np.ndarray:
     """Generates all permutations of binary inputs up to a specified length."""
