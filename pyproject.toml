@@ -11,4 +11,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-shapiq = { path = "../Documents/praktyki-projekt-shapley/shapiq_red", editable = true }
+shapiq = { path = "C:/Users/szymw/Documents/praktyki-projekt-shapley/shapiq_red", editable = true }
